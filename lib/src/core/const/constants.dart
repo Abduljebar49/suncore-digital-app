@@ -1,0 +1,4 @@
+
+
+const appName = 'SunCore Digital';
+
