@@ -6,7 +6,7 @@ class SplashController {
     await Future.delayed(const Duration(seconds: 2)); // Simulate loading
     
     final prefs = await SharedPreferences.getInstance();
-    final bool firstTimeUser = true;
+    final bool firstTimeUser = prefs.getBool('firstTimeUser') ?? true;
     
     Navigator.pushReplacementNamed(
       context,

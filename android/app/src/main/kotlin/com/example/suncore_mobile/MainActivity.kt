@@ -1,4 +1,4 @@
-package com.example.suncore_mobile
+package com.suncoredigital.mobileapp
 
 import io.flutter.embedding.android.FlutterActivity
 

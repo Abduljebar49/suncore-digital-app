@@ -1,32 +1,148 @@
+import 'package:auth0_flutter/auth0_flutter_web.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:auth0_flutter/auth0_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:suncore_mobile/src/core/theme/app_theme.dart';
 import 'package:suncore_mobile/src/features/settings/settings_screen.dart';
 import 'package:suncore_mobile/src/features/wallet/wallet_screen.dart';
 
-class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
+class DashboardScreen extends StatefulWidget {
+  final UserProfile? user;
+  final VoidCallback onLogout;
+  
+  const DashboardScreen({
+    super.key,
+    required this.user,
+    required this.onLogout,
+  });
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  late Auth0 auth0;
+  late Auth0Web auth0Web;
+
+  @override
+  void initState() {
+    super.initState();
+    auth0 = Auth0(dotenv.env['AUTH0_DOMAIN']!, dotenv.env['AUTH0_CLIENT_ID']!);
+    auth0Web = Auth0Web(dotenv.env['AUTH0_DOMAIN']!, dotenv.env['AUTH0_CLIENT_ID']!);
+  }
+
+  Future<void> logout() async {
+    try {
+      if (kIsWeb) {
+        await auth0Web.logout(returnToUrl: 'http://localhost:3000');
+      } else {
+        await auth0
+            .webAuthentication(scheme: dotenv.env['AUTH0_CUSTOM_SCHEME'])
+            .logout(useHTTPS: true);
+      }
+      widget.onLogout();
+    } catch (e) {
+      print(e);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard'),
+        title: Row(
+          children: [
+            if (widget.user?.profileUrl != null)
+              CircleAvatar(
+                backgroundImage: NetworkImage(widget.user!.profileUrl! as String),
+                radius: 16,
+              ),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Dashboard',
+                  style: textTheme.titleLarge,
+                ),
+                if (widget.user?.name != null)
+                  Text(
+                    widget.user!.name!,
+                    style: textTheme.bodySmall,
+                  ),
+              ],
+            ),
+          ],
+        ),
         actions: [
-          IconButton(icon: const Icon(Icons.notifications), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.account_circle), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: logout,
+            tooltip: 'Logout',
+          ),
         ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            // User Info Card (only shown if user has email)
+            if (widget.user?.email != null)
+              Card(
+                color: theme.cardColor,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      if (widget.user?.profileUrl != null)
+                        CircleAvatar(
+                          backgroundImage: NetworkImage(widget.user!.profileUrl! as String),
+                          radius: 30,
+                        ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (widget.user?.name != null)
+                              Text(
+                                widget.user!.name!,
+                                style: textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            if (widget.user?.email != null)
+                              Text(
+                                widget.user!.email!,
+                                style: textTheme.bodyMedium?.copyWith(
+                                  color: AppTheme.textSecondary,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            if (widget.user?.email != null) const SizedBox(height: 16),
+
             // Mining Status Card
             Card(
               color: theme.cardColor,
-              // shadowColor: AppTheme.backgroundColor,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -281,14 +397,13 @@ class DashboardScreen extends StatelessWidget {
     return Card(
       color: theme.cardColor,
       elevation: 2,
-      // shadowColor: AppTheme.backgroundColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
         padding: const EdgeInsets.all(12),
-        width: 120, // Fixed width for consistent sizing
+        width: 120,
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center, // Center vertically
-          crossAxisAlignment: CrossAxisAlignment.center, // Center horizontally
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
               width: 48,
@@ -328,7 +443,6 @@ class DashboardScreen extends StatelessWidget {
   ) {
     return Card(
       color: theme.cardColor,
-      // shadowColor: AppTheme.backgroundColor,
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
