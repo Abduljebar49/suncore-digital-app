@@ -134,7 +134,7 @@ class SupportScreen extends StatelessWidget {
                     ElevatedButton(
                       onPressed: () {},
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4a6cf7),
+                        backgroundColor: const Color.fromARGB(255, 211, 222, 140),
                         minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),

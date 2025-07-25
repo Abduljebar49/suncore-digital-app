@@ -56,24 +56,24 @@ class WalletScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Payout Information
-            const Text(
-              'Payout Details',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            _buildPayoutDetailCard(
-              icon: Icons.calendar_today,
-              title: 'Next Payout Date',
-              value: 'November 1, 2023',
-            ),
-            const SizedBox(height: 8),
-            _buildPayoutDetailCard(
-              icon: Icons.account_balance_wallet,
-              title: 'Destination Wallet',
-              value: '3FZbgi29cpjq2GjdwV8eyHuJJnkLtktZc5',
-              isAddress: true,
-            ),
-            const SizedBox(height: 24),
+            // const Text(
+            //   'Payout Details',
+            //   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            // ),
+            // const SizedBox(height: 12),
+            // _buildPayoutDetailCard(
+            //   icon: Icons.calendar_today,
+            //   title: 'Next Payout Date',
+            //   value: 'November 1, 2023',
+            // ),
+            // const SizedBox(height: 8),
+            // _buildPayoutDetailCard(
+            //   icon: Icons.account_balance_wallet,
+            //   title: 'Destination Wallet',
+            //   value: '3FZbgi29cpjq2GjdwV8eyHuJJnkLtktZc5',
+            //   isAddress: true,
+            // ),
+            // const SizedBox(height: 24),
 
             // Transaction History
             Row(
@@ -85,8 +85,8 @@ class WalletScreen extends StatelessWidget {
                 ),
                 TextButton(
                   onPressed: () {},
-                  child: const Text('View All'),
                   style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                  child: const Text('View All'),
                 ),
               ],
             ),

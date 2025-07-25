@@ -22,23 +22,27 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final width = MediaQuery.of(context).size.width;
-    final textTheme = theme.textTheme;
+    final isDarkMode = theme.brightness == Brightness.dark;
 
     return Scaffold(
+      backgroundColor: theme.colorScheme.background,
       appBar: AppBar(
-        title: Text('Welcome, $userName!', style: textTheme.headlineSmall),
+        backgroundColor: theme.colorScheme.surface,
+        title: Text(
+          'Client Dashboard',
+          style: TextStyle(color: theme.colorScheme.onSurface),
+        ),
+        iconTheme: IconThemeData(color: theme.colorScheme.onSurface),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
-              ),
-            },
+            icon: Icon(Icons.settings, color: theme.colorScheme.onSurface),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SettingsScreen()),
+            ),
           ),
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: Icon(Icons.logout, color: theme.colorScheme.onSurface),
             onPressed: onLogout,
             tooltip: 'Logout',
           ),
@@ -49,23 +53,52 @@ class DashboardScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              'Welcome, $userName!',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: theme.colorScheme.onBackground,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Earnings Card
             Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Estimated Earnings',
-                      style: TextStyle(
-                        fontSize: 18,
+                      style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 16),
-                    _buildEarningRow('24 Hours', '0.00042 BTC', '\$16.80'),
-                    _buildEarningRow('7 Days', '0.00294 BTC', '\$117.60'),
-                    _buildEarningRow('30 Days', '0.0126 BTC', '\$504.00'),
+                    _buildEarningRow(
+                      context,
+                      '24 Hours',
+                      '0.00042 BTC',
+                      '\$16.80',
+                    ),
+                    _buildEarningRow(
+                      context,
+                      '7 Days',
+                      '0.00294 BTC',
+                      '\$117.60',
+                    ),
+                    _buildEarningRow(
+                      context,
+                      '30 Days',
+                      '0.0126 BTC',
+                      '\$504.00',
+                    ),
                   ],
                 ),
               ),
@@ -76,59 +109,60 @@ class DashboardScreen extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Your Hardware Performance',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onBackground,
+                  ),
                 ),
                 const SizedBox(height: 12),
-                _buildPerformanceIndicator('Uptime', '99.2%', Colors.green),
                 _buildPerformanceIndicator(
-                  'Efficiency',
-                  '38 J/TH',
-                  Colors.blue,
+                  context,
+                  'Uptime',
+                  '99.2%',
+                  AppTheme.successColor,
                 ),
                 _buildPerformanceIndicator(
+                  context,
+                  'Efficiency',
+                  '38 J/TH',
+                  AppTheme.accentColor,
+                ),
+                _buildPerformanceIndicator(
+                  context,
                   'Hashrate',
                   '140 TH/s',
-                  Colors.purple,
+                  AppTheme.secondaryColor,
                 ),
               ],
             ),
             const SizedBox(height: 20),
 
             // Recent Activity
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Recent Activity',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-                _buildActivityItem(
-                  'Daily Payout',
-                  'Today, 08:00',
-                  '+0.00042 BTC',
-                ),
-                _buildActivityItem(
-                  'Management Fee',
-                  'Oct 1, 2023',
-                  '-0.005 BTC',
-                ),
-                _buildActivityItem(
-                  'Monthly Payout',
-                  'Sep 1, 2023',
-                  '+0.042 BTC',
-                ),
-              ],
-            ),
-            _buildSectionHeader('Key Performance Metrics'),
-            const SizedBox(height: 8),
-            _buildPerformanceMetricsCard(context),
-            const SizedBox(height: 24),
+            // Column(
+            //   crossAxisAlignment: CrossAxisAlignment.start,
+            //   children: [
+            //     Text(
+            //       'Recent Activity',
+            //       style: theme.textTheme.titleMedium?.copyWith(
+            //         fontWeight: FontWeight.bold,
+            //         color: theme.colorScheme.onBackground,
+            //       ),
+            //     ),
+            //     const SizedBox(height: 12),
+            //     _buildActivityItem(context, 'Daily Payout', 'Today, 08:00', '+0.00042 BTC'),
+            //     _buildActivityItem(context, 'Management Fee', 'Oct 1, 2023', '-0.005 BTC'),
+            //     _buildActivityItem(context, 'Monthly Payout', 'Sep 1, 2023', '+0.042 BTC'),
+            //   ],
+            // ),
+            // _buildSectionHeader(context, 'Key Performance Metrics'),
+            // const SizedBox(height: 8),
+            // _buildPerformanceMetricsCard(context),
+            // const SizedBox(height: 24),
 
             // Quick Access Section
-            _buildSectionHeader('Quick Access'),
+            _buildSectionHeader(context, 'Quick Access'),
             const SizedBox(height: 8),
             GridView.count(
               shrinkWrap: true,
@@ -179,13 +213,13 @@ class DashboardScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Live Data Section
-            _buildSectionHeader('Live Data'),
+            _buildSectionHeader(context, 'Live Data'),
             const SizedBox(height: 8),
             _buildLiveDataSection(context, width),
             const SizedBox(height: 24),
 
             // Learning Hub Section
-            _buildSectionHeader('Learning Hub'),
+            _buildSectionHeader(context, 'Learning Hub'),
             const SizedBox(height: 8),
             _buildLearningHubSection(context),
           ],
@@ -195,30 +229,42 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _buildEarningRow(
+    BuildContext context,
     String timeframe,
     String btcAmount,
     String usdAmount,
   ) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
           Expanded(
-            child: Text(timeframe, style: const TextStyle(fontSize: 16)),
+            child: Text(
+              timeframe,
+              style: TextStyle(
+                fontSize: 16,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
                 btcAmount,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
               Text(
                 usdAmount,
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                ),
               ),
             ],
           ),
@@ -227,10 +273,17 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  // Helper method to build performance indicators
-  Widget _buildPerformanceIndicator(String label, String value, Color color) {
+  Widget _buildPerformanceIndicator(
+    BuildContext context,
+    String label,
+    String value,
+    Color color,
+  ) {
+    final theme = Theme.of(context);
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
@@ -247,68 +300,98 @@ class DashboardScreen extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSurface,
+                ),
               ),
             ),
-            Text(value, style: const TextStyle(fontSize: 16)),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 16,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  // Helper method to build activity items
-  Widget _buildActivityItem(String title, String date, String amount) {
+  Widget _buildActivityItem(
+    BuildContext context,
+    String title,
+    String date,
+    String amount,
+  ) {
+    final theme = Theme.of(context);
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: const Icon(Icons.currency_bitcoin, color: Colors.orange),
-      title: Text(title),
-      subtitle: Text(date),
-      trailing: Text(amount),
+      leading: Icon(Icons.currency_bitcoin, color: theme.colorScheme.primary),
+      title: Text(title, style: TextStyle(color: theme.colorScheme.onSurface)),
+      subtitle: Text(
+        date,
+        style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.7)),
+      ),
+      trailing: Text(
+        amount,
+        style: TextStyle(
+          color: amount.startsWith('+')
+              ? AppTheme.successColor
+              : amount.startsWith('-')
+              ? AppTheme.errorColor
+              : theme.colorScheme.onSurface,
+        ),
+      ),
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    final theme = Theme.of(context);
     return Text(
       title,
-      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      style: theme.textTheme.titleMedium?.copyWith(
+        fontWeight: FontWeight.bold,
+        color: theme.colorScheme.onBackground,
+      ),
     );
   }
 
   Widget _buildPerformanceMetricsCard(BuildContext context) {
+    final theme = Theme.of(context);
     return Card(
+      elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Daily Performance
             _buildMetricRow(
+              context,
               'Today',
               '0.00042 BTC',
               '\$16.80 USD',
               Icons.today,
-              Colors.blue,
+              AppTheme.accentColor,
             ),
-            const Divider(height: 24),
-
-            // Monthly Performance
+            Divider(height: 24, color: theme.dividerColor),
             _buildMetricRow(
+              context,
               'This Month',
               '0.0126 BTC',
               '\$504.00 USD',
               Icons.calendar_month,
-              Colors.green,
+              AppTheme.successColor,
             ),
-            const Divider(height: 24),
-
-            // YTD Performance
+            Divider(height: 24, color: theme.dividerColor),
             _buildMetricRow(
+              context,
               'Year to Date',
               '0.042 BTC',
               '\$1,680.00 USD',
               Icons.insights,
-              Colors.orange,
+              theme.colorScheme.primary,
             ),
           ],
         ),
@@ -317,12 +400,14 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _buildMetricRow(
+    BuildContext context,
     String period,
     String btcValue,
     String usdValue,
     IconData icon,
     Color color,
   ) {
+    final theme = Theme.of(context);
     return Row(
       children: [
         Container(
@@ -338,12 +423,27 @@ class DashboardScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(period, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                period,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
               const SizedBox(height: 4),
-              Text(btcValue, style: const TextStyle(fontSize: 16)),
+              Text(
+                btcValue,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
               Text(
                 usdValue,
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                ),
               ),
             ],
           ),
@@ -358,9 +458,11 @@ class DashboardScreen extends StatelessWidget {
     String label,
     Widget destination,
   ) {
+    final theme = Theme.of(context);
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: theme.colorScheme.surface,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {
@@ -374,12 +476,15 @@ class DashboardScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 28, color: AppTheme.primaryColor),
+              Icon(icon, size: 28, color: theme.colorScheme.primary),
               const SizedBox(height: 8),
               Text(
                 label,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 12),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: theme.colorScheme.onSurface,
+                ),
               ),
             ],
           ),
@@ -389,6 +494,7 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _buildLiveDataSection(BuildContext context, double width) {
+    final theme = Theme.of(context);
     // Simulated data for charts
     final List<double> btcPrices = [
       29000,
@@ -413,8 +519,8 @@ class DashboardScreen extends StatelessWidget {
 
     return Column(
       children: [
-        // BTC vs Market Charts
         Card(
+          elevation: 2,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -423,9 +529,12 @@ class DashboardScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'BTC vs Market Indices (Last 7 Days)',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurface,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Container(
@@ -437,26 +546,28 @@ class DashboardScreen extends StatelessWidget {
                       primaryData: btcPrices,
                       secondaryData: spyPrices,
                       labels: timeLabels,
-                      primaryColor: Colors.orange,
-                      secondaryColor: Colors.blue,
+                      primaryColor: theme.colorScheme.primary,
+                      secondaryColor: AppTheme.accentColor,
                       primaryLabel: 'BTC (×1000)',
                       secondaryLabel: 'SPY (×100)',
                     ),
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
+                Text(
                   'Simulated data showing BTC correlation with S&P 500',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  ),
                 ),
               ],
             ),
           ),
         ),
         const SizedBox(height: 16),
-
-        // Mining Performance
         Card(
+          elevation: 2,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -465,9 +576,12 @@ class DashboardScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Mining Performance (TH/s)',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurface,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Container(
@@ -478,16 +592,19 @@ class DashboardScreen extends StatelessWidget {
                     painter: _ChartPainter(
                       primaryData: miningRates,
                       labels: timeLabels,
-                      primaryColor: Colors.green,
+                      primaryColor: AppTheme.successColor,
                       primaryLabel: 'Hashrate',
                       showSecondary: false,
                     ),
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
+                Text(
                   'Simulated hashrate data from connected miners',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  ),
                 ),
               ],
             ),
@@ -498,25 +615,30 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _buildLearningHubSection(BuildContext context) {
+    final theme = Theme.of(context);
     return Card(
+      elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             _buildLearningHubItem(
+              context,
               'Energy Optimization Tips',
               Icons.bolt,
               () => _showEnergyTips(context),
             ),
-            const Divider(height: 24),
+            Divider(height: 24, color: theme.dividerColor),
             _buildLearningHubItem(
+              context,
               'Latest ASIC Models',
               Icons.hardware,
               () => _showLatestAsics(context),
             ),
-            const Divider(height: 24),
+            Divider(height: 24, color: theme.dividerColor),
             _buildLearningHubItem(
+              context,
               'Company Updates',
               Icons.new_releases,
               () => _showCompanyUpdates(context),
@@ -528,40 +650,49 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _buildLearningHubItem(
+    BuildContext context,
     String title,
     IconData icon,
     VoidCallback onTap,
   ) {
+    final theme = Theme.of(context);
     return InkWell(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(
           children: [
-            Icon(icon, size: 24, color: AppTheme.primaryColor),
+            Icon(icon, size: 24, color: theme.colorScheme.primary),
             const SizedBox(width: 16),
-            Expanded(child: Text(title, style: const TextStyle(fontSize: 16))),
-            const Icon(Icons.chevron_right),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: theme.colorScheme.onSurface.withOpacity(0.6),
+            ),
           ],
         ),
       ),
     );
   }
 
-  void _showNotifications(BuildContext context) {
-    // Notification dialog implementation
-  }
-
   void _showEnergyTips(BuildContext context) {
-    // Energy tips dialog implementation
+    // Implementation
   }
 
   void _showLatestAsics(BuildContext context) {
-    // Latest ASICs dialog implementation
+    // Implementation
   }
 
   void _showCompanyUpdates(BuildContext context) {
-    // Company updates dialog implementation
+    // Implementation
   }
 }
 

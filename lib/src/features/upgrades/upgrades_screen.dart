@@ -94,6 +94,7 @@ class UpgradesScreen extends StatelessWidget {
                 SizedBox(
                   width: double.infinity, // Make button full width
                   child: ElevatedButton(
+                    
                     onPressed: () {},
                     child: const Text('Request Upgrade'),
                   ),

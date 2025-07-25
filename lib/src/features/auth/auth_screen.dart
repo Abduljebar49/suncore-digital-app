@@ -10,6 +10,7 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
@@ -20,14 +21,23 @@ class LoginScreen extends StatelessWidget {
                 userName: state.user.name ?? 'User',
                 onLogout: () {
                   context.read<AuthBloc>().add(LogoutRequested());
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
+                  );
                 },
               ),
             ),
           );
         } else if (state is AuthFailed) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.message)));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: AppTheme.errorColor,
+            ),
+          );
         }
       },
       child: Scaffold(
@@ -37,8 +47,8 @@ class LoginScreen extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                AppTheme.primaryColor.withOpacity(0.8),
-                AppTheme.backgroundColor,
+                AppTheme.primaryColor.withOpacity(0.9),
+                AppTheme.secondaryColor.withOpacity(0.7),
               ],
             ),
           ),
@@ -54,7 +64,7 @@ class LoginScreen extends StatelessWidget {
                       Icon(
                         Icons.currency_bitcoin,
                         size: 80,
-                        color: AppTheme.secondaryColor,
+                        color: Colors.white,
                       ),
                       const SizedBox(height: 16),
                       Text(
@@ -70,7 +80,7 @@ class LoginScreen extends StatelessWidget {
                         'Mine crypto the way nature intended',
                         style: TextStyle(
                           fontSize: 16,
-                          color: AppTheme.textPrimary.withOpacity(0.9),
+                          color: Colors.white.withOpacity(0.9),
                         ),
                       ),
                     ],
@@ -79,7 +89,7 @@ class LoginScreen extends StatelessWidget {
 
                   // Login Card
                   Card(
-                    color: AppTheme.cardColor,
+                    color: Colors.white,
                     elevation: 8,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -88,29 +98,33 @@ class LoginScreen extends StatelessWidget {
                       padding: const EdgeInsets.all(24),
                       child: Column(
                         children: [
-                          const Text(
+                          Text(
                             'Sign In',
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
-                              color: AppTheme.textPrimary,
+                              color: AppTheme.primaryColor,
                             ),
                           ),
                           const SizedBox(height: 40),
                           BlocBuilder<AuthBloc, AuthState>(
                             builder: (context, state) {
                               if (state is AuthLoading) {
-                                return const CircularProgressIndicator();
+                                return const CircularProgressIndicator(
+                                  color: AppTheme.primaryColor,
+                                );
                               }
                               return SizedBox(
                                 width: double.infinity,
                                 height: 50,
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppTheme.secondaryColor,
+                                    backgroundColor: AppTheme.primaryColor,
+                                    foregroundColor: Colors.white,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8),
                                     ),
+                                    elevation: 2,
                                   ),
                                   onPressed: () {
                                     context.read<AuthBloc>().add(
@@ -118,11 +132,10 @@ class LoginScreen extends StatelessWidget {
                                     );
                                   },
                                   child: const Text(
-                                    'LOGIN WITH AUTH0',
+                                    'LOGIN TO SUNCORE DIGITAL',
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.black,
                                     ),
                                   ),
                                 ),
@@ -130,28 +143,29 @@ class LoginScreen extends StatelessWidget {
                             },
                           ),
                           const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text(
-                                "Don't have an account?",
-                                style: TextStyle(color: AppTheme.textSecondary),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  context.read<AuthBloc>().add(
-                                    LoginRequested(),
-                                  );
-                                },
-                                child: const Text(
-                                  'Sign up',
-                                  style: TextStyle(
-                                    color: AppTheme.secondaryColor,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                          // Row(
+                          //   mainAxisAlignment: MainAxisAlignment.center,
+                          //   children: [
+                          //     Text(
+                          //       "Don't have an account?",
+                          //       style: TextStyle(color: Colors.grey.shade600),
+                          //     ),
+                          //     TextButton(
+                          //       onPressed: () {
+                          //         context.read<AuthBloc>().add(
+                          //           LoginRequested(),
+                          //         );
+                          //       },
+                          //       child: Text(
+                          //         'Sign up',
+                          //         style: TextStyle(
+                          //           color: AppTheme.primaryColor,
+                          //           fontWeight: FontWeight.bold,
+                          //         ),
+                          //       ),
+                          //     ),
+                          //   ],
+                          // ),
                         ],
                       ),
                     ),
@@ -163,14 +177,17 @@ class LoginScreen extends StatelessWidget {
                     builder: (context, state) {
                       return TextButton.icon(
                         onPressed: () {},
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.fingerprint,
-                          color: AppTheme.secondaryColor,
+                          color: Colors.white,
                           size: 24,
                         ),
-                        label: const Text(
+                        label: Text(
                           'Use Biometric Login',
-                          style: TextStyle(color: AppTheme.secondaryColor),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       );
                     },
