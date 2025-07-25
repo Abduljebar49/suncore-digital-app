@@ -17,7 +17,7 @@ class LoginScreen extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) => DashboardScreen(
-                user: state.user,
+                userName: state.user.name ?? 'User',
                 onLogout: () {
                   context.read<AuthBloc>().add(LogoutRequested());
                 },
@@ -25,9 +25,9 @@ class LoginScreen extends StatelessWidget {
             ),
           );
         } else if (state is AuthFailed) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.message)));
         }
       },
       child: Scaffold(
@@ -113,7 +113,9 @@ class LoginScreen extends StatelessWidget {
                                     ),
                                   ),
                                   onPressed: () {
-                                    context.read<AuthBloc>().add(LoginRequested());
+                                    context.read<AuthBloc>().add(
+                                      LoginRequested(),
+                                    );
                                   },
                                   child: const Text(
                                     'LOGIN WITH AUTH0',
@@ -137,7 +139,9 @@ class LoginScreen extends StatelessWidget {
                               ),
                               TextButton(
                                 onPressed: () {
-                                  context.read<AuthBloc>().add(LoginRequested());
+                                  context.read<AuthBloc>().add(
+                                    LoginRequested(),
+                                  );
                                 },
                                 child: const Text(
                                   'Sign up',

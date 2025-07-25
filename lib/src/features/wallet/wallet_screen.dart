@@ -1,36 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:suncore_mobile/src/core/theme/app_theme.dart';
 
 class WalletScreen extends StatelessWidget {
   const WalletScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Wallet')),
+      appBar: AppBar(
+        title: const Text('Earnings Overview'),
+        centerTitle: true,
+        elevation: 0,
+      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Balance Card
+            // Earnings Summary Card
             Card(
-              color: theme.cardColor,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
+                side: BorderSide(
+                  color: Theme.of(context).dividerColor,
+                  width: 1,
+                ),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    Text(
-                      'Total Balance',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: theme.textTheme.headlineLarge?.color,
-                      ),
+                    const Text(
+                      'Current Balance',
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                     const SizedBox(height: 8),
                     const Text(
@@ -40,143 +42,69 @@ class WalletScreen extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
+                    const SizedBox(height: 4),
+                    Text(
                       '≈ \$1,680.00 USD',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: AppTheme.textSecondary,
-                      ),
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _buildWalletAction('Deposit', Icons.arrow_downward),
-                        _buildWalletAction('Withdraw', Icons.arrow_upward),
-                        _buildWalletAction('Exchange', Icons.swap_horiz),
-                      ],
-                    ),
+                    _buildEarningsBreakdown(),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
 
-            // Wallet Address
-            Card(
-              color: theme.cardColor,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Your Bitcoin Address',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: theme.cardColor,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: theme.dividerColor, width: 1),
-                      ),
-                      child: const Row(
-                        children: [
-                          Icon(
-                            Icons.currency_bitcoin,
-                            color: AppTheme.secondaryColor,
-                          ),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              '3FZbgi29cpjq2GjdwV8eyHuJJnkLtktZc5',
-                              style: TextStyle(
-                                fontFamily: 'Monospace',
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 8),
-                          Icon(Icons.copy, size: 20),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'This address cannot be modified for security reasons.',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            // Payout Information
+            const Text(
+              'Payout Details',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+            _buildPayoutDetailCard(
+              icon: Icons.calendar_today,
+              title: 'Next Payout Date',
+              value: 'November 1, 2023',
+            ),
+            const SizedBox(height: 8),
+            _buildPayoutDetailCard(
+              icon: Icons.account_balance_wallet,
+              title: 'Destination Wallet',
+              value: '3FZbgi29cpjq2GjdwV8eyHuJJnkLtktZc5',
+              isAddress: true,
+            ),
+            const SizedBox(height: 24),
 
-            // Recent Transactions
-            Card(
-              color: theme.cardColor,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Recent Transactions',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          'View All',
-                          style: TextStyle(color: AppTheme.secondaryColor),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTransactionItem(
-                      'Mining Reward',
-                      'Today, 10:45 AM',
-                      '+0.00042 BTC',
-                      true,
-                    ),
-                    const Divider(height: 24, color: Colors.grey),
-                    _buildTransactionItem(
-                      'Withdrawal',
-                      'Yesterday, 2:30 PM',
-                      '-0.01 BTC',
-                      false,
-                    ),
-                    const Divider(height: 24, color: Colors.grey),
-                    _buildTransactionItem(
-                      'Mining Reward',
-                      'Yesterday, 10:45 AM',
-                      '+0.00041 BTC',
-                      true,
-                    ),
-                  ],
+            // Transaction History
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Recent Earnings',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-              ),
+                TextButton(
+                  onPressed: () {},
+                  child: const Text('View All'),
+                  style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildEarningItem(
+              date: 'October 15, 2023',
+              amount: '0.00042 BTC',
+              description: 'Daily mining earnings',
+            ),
+            _buildEarningItem(
+              date: 'October 1, 2023',
+              amount: '0.0126 BTC',
+              description: 'Monthly payout',
+            ),
+            _buildEarningItem(
+              date: 'September 15, 2023',
+              amount: '0.00039 BTC',
+              description: 'Daily mining earnings',
             ),
           ],
         ),
@@ -184,66 +112,144 @@ class WalletScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildWalletAction(String label, IconData icon) {
+  Widget _buildEarningsBreakdown() {
     return Column(
       children: [
-        CircleAvatar(
-          radius: 24,
-          backgroundColor: AppTheme.primaryColor.withOpacity(0.2),
-          child: Icon(icon, color: AppTheme.secondaryColor),
-        ),
-        const SizedBox(height: 8),
-        Text(label, style: const TextStyle(fontSize: 12)),
+        _buildBreakdownRow('This Month', '0.0126 BTC', '\$504.00'),
+        _buildBreakdownRow('Last Month', '0.0118 BTC', '\$472.00'),
+        _buildBreakdownRow('All Time', '0.042 BTC', '\$1,680.00'),
       ],
     );
   }
 
-  Widget _buildTransactionItem(
-    String title,
-    String date,
-    String amount,
-    bool isCredit,
-  ) {
-    return Row(
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: isCredit
-                ? Colors.green.withOpacity(0.2)
-                : Colors.red.withOpacity(0.2),
-            shape: BoxShape.circle,
+  Widget _buildBreakdownRow(String label, String btcAmount, String usdAmount) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(label, style: const TextStyle(color: Colors.grey)),
           ),
-          child: Icon(
-            isCredit ? Icons.arrow_downward : Icons.arrow_upward,
-            color: isCredit ? Colors.green : Colors.red,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
               Text(
-                date,
-                style: const TextStyle(
-                  color: AppTheme.textSecondary,
-                  fontSize: 12,
-                ),
+                btcAmount,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Text(
+                usdAmount,
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPayoutDetailCard({
+    required IconData icon,
+    required String title,
+    required String value,
+    bool isAddress = false,
+  }) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey[300]!, width: 1),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.blue),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            if (isAddress)
+              IconButton(
+                icon: const Icon(Icons.copy, size: 20),
+                onPressed: () {},
+                padding: EdgeInsets.zero,
+              ),
+          ],
         ),
-        Text(
-          amount,
-          style: TextStyle(
-            color: isCredit ? Colors.green : Colors.red,
-            fontWeight: FontWeight.bold,
-          ),
+      ),
+    );
+  }
+
+  Widget _buildEarningItem({
+    required String date,
+    required String amount,
+    required String description,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: Colors.grey[200]!, width: 1)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.green[50],
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.currency_bitcoin, color: Colors.green),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    description,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    date,
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              amount,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.green,
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

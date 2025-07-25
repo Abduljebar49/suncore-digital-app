@@ -1,92 +1,45 @@
-import 'package:auth0_flutter/auth0_flutter_web.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:auth0_flutter/auth0_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:suncore_mobile/src/core/theme/app_theme.dart';
+import 'package:suncore_mobile/src/features/asic/asic_management_screen.dart';
+import 'package:suncore_mobile/src/features/performance/performance_screen.dart';
 import 'package:suncore_mobile/src/features/settings/settings_screen.dart';
+import 'package:suncore_mobile/src/features/statements/statements_screen.dart';
+import 'package:suncore_mobile/src/features/support/support_screen.dart';
+import 'package:suncore_mobile/src/features/upgrades/upgrades_screen.dart';
 import 'package:suncore_mobile/src/features/wallet/wallet_screen.dart';
 
-class DashboardScreen extends StatefulWidget {
-  final UserProfile? user;
+class DashboardScreen extends StatelessWidget {
+  final String userName;
   final VoidCallback onLogout;
-  
+
   const DashboardScreen({
     super.key,
-    required this.user,
+    required this.userName,
     required this.onLogout,
   });
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
-}
-
-class _DashboardScreenState extends State<DashboardScreen> {
-  late Auth0 auth0;
-  late Auth0Web auth0Web;
-
-  @override
-  void initState() {
-    super.initState();
-    auth0 = Auth0(dotenv.env['AUTH0_DOMAIN']!, dotenv.env['AUTH0_CLIENT_ID']!);
-    auth0Web = Auth0Web(dotenv.env['AUTH0_DOMAIN']!, dotenv.env['AUTH0_CLIENT_ID']!);
-  }
-
-  Future<void> logout() async {
-    try {
-      if (kIsWeb) {
-        await auth0Web.logout(returnToUrl: 'http://localhost:3000');
-      } else {
-        await auth0
-            .webAuthentication(scheme: dotenv.env['AUTH0_CUSTOM_SCHEME'])
-            .logout(useHTTPS: true);
-      }
-      widget.onLogout();
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final width = MediaQuery.of(context).size.width;
     final textTheme = theme.textTheme;
-    
+
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            if (widget.user?.profileUrl != null)
-              CircleAvatar(
-                backgroundImage: NetworkImage(widget.user!.profileUrl! as String),
-                radius: 16,
-              ),
-            const SizedBox(width: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Dashboard',
-                  style: textTheme.titleLarge,
-                ),
-                if (widget.user?.name != null)
-                  Text(
-                    widget.user!.name!,
-                    style: textTheme.bodySmall,
-                  ),
-              ],
-            ),
-          ],
-        ),
+        title: Text('Welcome, $userName!', style: textTheme.headlineSmall),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () {},
+            icon: const Icon(Icons.settings),
+            onPressed: () => {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              ),
+            },
           ),
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: logout,
+            onPressed: onLogout,
             tooltip: 'Logout',
           ),
         ],
@@ -94,340 +47,268 @@ class _DashboardScreenState extends State<DashboardScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // User Info Card (only shown if user has email)
-            if (widget.user?.email != null)
-              Card(
-                color: theme.cardColor,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      if (widget.user?.profileUrl != null)
-                        CircleAvatar(
-                          backgroundImage: NetworkImage(widget.user!.profileUrl! as String),
-                          radius: 30,
-                        ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (widget.user?.name != null)
-                              Text(
-                                widget.user!.name!,
-                                style: textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            if (widget.user?.email != null)
-                              Text(
-                                widget.user!.email!,
-                                style: textTheme.bodyMedium?.copyWith(
-                                  color: AppTheme.textSecondary,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            if (widget.user?.email != null) const SizedBox(height: 16),
-
-            // Mining Status Card
             Card(
-              color: theme.cardColor,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Mining Status',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: theme.textTheme.titleMedium?.color,
-                          ),
-                        ),
-                        Chip(
-                          label: Text(
-                            'ACTIVE',
-                            style: TextStyle(
-                              color: AppTheme.secondaryColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          backgroundColor: AppTheme.backgroundColor,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildStatItem(
-                          'Hash Rate',
-                          '125.4 TH/s',
-                          Icons.speed,
-                          theme,
-                        ),
-                        _buildStatItem('Uptime', '99.8%', Icons.timer, theme),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildStatItem('Energy', '2.4 kWh', Icons.bolt, theme),
-                        _buildStatItem(
-                          'Temperature',
-                          '64°C',
-                          Icons.thermostat,
-                          theme,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    LinearProgressIndicator(
-                      value: 0.75,
-                      backgroundColor: Colors.grey[800],
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        AppTheme.secondaryColor,
-                      ),
-                      minHeight: 8,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    const SizedBox(height: 8),
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Daily quota',
-                          style: TextStyle(color: AppTheme.textSecondary),
-                        ),
-                        Text(
-                          '75% completed',
-                          style: TextStyle(color: AppTheme.textSecondary),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Earnings Card
-            Card(
-              color: theme.cardColor,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Earnings',
+                    const Text(
+                      'Estimated Earnings',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: theme.textTheme.bodyLarge?.color,
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Today',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AppTheme.textSecondary,
-                          ),
-                        ),
-                        Text(
-                          '0.00042 BTC',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.secondaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'This Week',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AppTheme.textSecondary,
-                          ),
-                        ),
-                        Text(
-                          '0.0021 BTC',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.secondaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'All Time',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AppTheme.textSecondary,
-                          ),
-                        ),
-                        Text(
-                          '0.042 BTC',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.secondaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 40,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        onPressed: () {},
-                        child: Text(
-                          'WITHDRAW EARNINGS',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
+                    _buildEarningRow('24 Hours', '0.00042 BTC', '\$16.80'),
+                    _buildEarningRow('7 Days', '0.00294 BTC', '\$117.60'),
+                    _buildEarningRow('30 Days', '0.0126 BTC', '\$504.00'),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
-            // Quick Actions
-            Text(
-              'Quick Actions',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: theme.textTheme.headlineLarge?.color,
-              ),
+            // Hardware Performance
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Your Hardware Performance',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                _buildPerformanceIndicator('Uptime', '99.2%', Colors.green),
+                _buildPerformanceIndicator(
+                  'Efficiency',
+                  '38 J/TH',
+                  Colors.blue,
+                ),
+                _buildPerformanceIndicator(
+                  'Hashrate',
+                  '140 TH/s',
+                  Colors.purple,
+                ),
+              ],
             ),
+            const SizedBox(height: 20),
+
+            // Recent Activity
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Recent Activity',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                _buildActivityItem(
+                  'Daily Payout',
+                  'Today, 08:00',
+                  '+0.00042 BTC',
+                ),
+                _buildActivityItem(
+                  'Management Fee',
+                  'Oct 1, 2023',
+                  '-0.005 BTC',
+                ),
+                _buildActivityItem(
+                  'Monthly Payout',
+                  'Sep 1, 2023',
+                  '+0.042 BTC',
+                ),
+              ],
+            ),
+            _buildSectionHeader('Key Performance Metrics'),
+            const SizedBox(height: 8),
+            _buildPerformanceMetricsCard(context),
+            const SizedBox(height: 24),
+
+            // Quick Access Section
+            _buildSectionHeader('Quick Access'),
             const SizedBox(height: 8),
             GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               crossAxisCount: 3,
-              childAspectRatio: 1,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
+              childAspectRatio: 1.2,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
               children: [
-                _buildActionButton(
-                  Icons.power_settings_new,
-                  'Power',
-                  () {},
-                  theme,
+                _buildQuickAction(
+                  context,
+                  Icons.account_balance_wallet,
+                  'Wallet',
+                  WalletScreen(),
                 ),
-                _buildActionButton(Icons.tune, 'Optimize', () {}, theme),
-                _buildActionButton(Icons.bar_chart, 'Stats', () {}, theme),
-                _buildActionButton(Icons.account_balance_wallet, 'Wallet', () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const WalletScreen(),
-                    ),
-                  );
-                }, theme),
-                _buildActionButton(Icons.receipt, 'History', () {}, theme),
-                _buildActionButton(Icons.settings, 'Settings', () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SettingsScreen(),
-                    ),
-                  );
-                }, theme),
+                _buildQuickAction(
+                  context,
+                  Icons.bar_chart,
+                  'Performance',
+                  PerformanceScreen(),
+                ),
+                _buildQuickAction(
+                  context,
+                  Icons.hardware,
+                  'My ASICs',
+                  AsicManagementScreen(),
+                ),
+                _buildQuickAction(
+                  context,
+                  Icons.upgrade,
+                  'Upgrades',
+                  UpgradesScreen(),
+                ),
+                _buildQuickAction(
+                  context,
+                  Icons.description,
+                  'Statements',
+                  StatementsScreen(),
+                ),
+                _buildQuickAction(
+                  context,
+                  Icons.support,
+                  'Support',
+                  SupportScreen(),
+                ),
               ],
             ),
+            const SizedBox(height: 24),
+
+            // Live Data Section
+            _buildSectionHeader('Live Data'),
+            const SizedBox(height: 8),
+            _buildLiveDataSection(context, width),
+            const SizedBox(height: 24),
+
+            // Learning Hub Section
+            _buildSectionHeader('Learning Hub'),
+            const SizedBox(height: 8),
+            _buildLearningHubSection(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatItem(
-    String title,
-    String value,
-    IconData icon,
-    ThemeData theme,
+  Widget _buildEarningRow(
+    String timeframe,
+    String btcAmount,
+    String usdAmount,
   ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(timeframe, style: const TextStyle(fontSize: 16)),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                btcAmount,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              Text(
+                usdAmount,
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper method to build performance indicators
+  Widget _buildPerformanceIndicator(String label, String value, Color color) {
     return Card(
-      color: theme.cardColor,
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
         padding: const EdgeInsets.all(12),
-        width: 120,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
+        child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: 8,
+              height: 40,
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.5),
-                shape: BoxShape.circle,
+                color: color,
+                borderRadius: BorderRadius.circular(4),
               ),
-              child: Icon(icon, size: 24, color: AppTheme.secondaryColor),
             ),
-            const SizedBox(height: 12),
-            Text(
-              value,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppTheme.textSecondary,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              textAlign: TextAlign.center,
+            ),
+            Text(value, style: const TextStyle(fontSize: 16)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Helper method to build activity items
+  Widget _buildActivityItem(String title, String date, String amount) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: const Icon(Icons.currency_bitcoin, color: Colors.orange),
+      title: Text(title),
+      subtitle: Text(date),
+      trailing: Text(amount),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Text(
+      title,
+      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    );
+  }
+
+  Widget _buildPerformanceMetricsCard(BuildContext context) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // Daily Performance
+            _buildMetricRow(
+              'Today',
+              '0.00042 BTC',
+              '\$16.80 USD',
+              Icons.today,
+              Colors.blue,
+            ),
+            const Divider(height: 24),
+
+            // Monthly Performance
+            _buildMetricRow(
+              'This Month',
+              '0.0126 BTC',
+              '\$504.00 USD',
+              Icons.calendar_month,
+              Colors.green,
+            ),
+            const Divider(height: 24),
+
+            // YTD Performance
+            _buildMetricRow(
+              'Year to Date',
+              '0.042 BTC',
+              '\$1,680.00 USD',
+              Icons.insights,
+              Colors.orange,
             ),
           ],
         ),
@@ -435,28 +316,380 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildActionButton(
+  Widget _buildMetricRow(
+    String period,
+    String btcValue,
+    String usdValue,
+    IconData icon,
+    Color color,
+  ) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.2),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: color),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(period, style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Text(btcValue, style: const TextStyle(fontSize: 16)),
+              Text(
+                usdValue,
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickAction(
+    BuildContext context,
     IconData icon,
     String label,
-    VoidCallback onPressed,
-    ThemeData theme,
+    Widget destination,
   ) {
     return Card(
-      color: theme.cardColor,
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: onPressed,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => destination),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 28, color: AppTheme.primaryColor),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLiveDataSection(BuildContext context, double width) {
+    // Simulated data for charts
+    final List<double> btcPrices = [
+      29000,
+      29250,
+      29100,
+      29300,
+      29500,
+      29700,
+      29650,
+    ];
+    final List<double> spyPrices = [440, 442, 441, 443, 444, 443, 442];
+    final List<double> miningRates = [120, 122, 118, 125, 123, 127, 130];
+    final List<String> timeLabels = [
+      'Mon',
+      'Tue',
+      'Wed',
+      'Thu',
+      'Fri',
+      'Sat',
+      'Sun',
+    ];
+
+    return Column(
+      children: [
+        // BTC vs Market Charts
+        Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'BTC vs Market Indices (Last 7 Days)',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  height: 200,
+                  width: width * 0.8,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: CustomPaint(
+                    painter: _ChartPainter(
+                      primaryData: btcPrices,
+                      secondaryData: spyPrices,
+                      labels: timeLabels,
+                      primaryColor: Colors.orange,
+                      secondaryColor: Colors.blue,
+                      primaryLabel: 'BTC (×1000)',
+                      secondaryLabel: 'SPY (×100)',
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Simulated data showing BTC correlation with S&P 500',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Mining Performance
+        Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Mining Performance (TH/s)',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  height: 200,
+                  width: width,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: CustomPaint(
+                    painter: _ChartPainter(
+                      primaryData: miningRates,
+                      labels: timeLabels,
+                      primaryColor: Colors.green,
+                      primaryLabel: 'Hashrate',
+                      showSecondary: false,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Simulated hashrate data from connected miners',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLearningHubSection(BuildContext context) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 28, color: AppTheme.secondaryColor),
-            const SizedBox(height: 8),
-            Text(label, style: const TextStyle(fontSize: 12)),
+            _buildLearningHubItem(
+              'Energy Optimization Tips',
+              Icons.bolt,
+              () => _showEnergyTips(context),
+            ),
+            const Divider(height: 24),
+            _buildLearningHubItem(
+              'Latest ASIC Models',
+              Icons.hardware,
+              () => _showLatestAsics(context),
+            ),
+            const Divider(height: 24),
+            _buildLearningHubItem(
+              'Company Updates',
+              Icons.new_releases,
+              () => _showCompanyUpdates(context),
+            ),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildLearningHubItem(
+    String title,
+    IconData icon,
+    VoidCallback onTap,
+  ) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            Icon(icon, size: 24, color: AppTheme.primaryColor),
+            const SizedBox(width: 16),
+            Expanded(child: Text(title, style: const TextStyle(fontSize: 16))),
+            const Icon(Icons.chevron_right),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showNotifications(BuildContext context) {
+    // Notification dialog implementation
+  }
+
+  void _showEnergyTips(BuildContext context) {
+    // Energy tips dialog implementation
+  }
+
+  void _showLatestAsics(BuildContext context) {
+    // Latest ASICs dialog implementation
+  }
+
+  void _showCompanyUpdates(BuildContext context) {
+    // Company updates dialog implementation
+  }
+}
+
+class _ChartPainter extends CustomPainter {
+  final List<double> primaryData;
+  final List<double>? secondaryData;
+  final List<String> labels;
+  final Color primaryColor;
+  final Color? secondaryColor;
+  final String primaryLabel;
+  final String? secondaryLabel;
+  final bool showSecondary;
+
+  _ChartPainter({
+    required this.primaryData,
+    this.secondaryData,
+    required this.labels,
+    this.primaryColor = Colors.blue,
+    this.secondaryColor,
+    required this.primaryLabel,
+    this.secondaryLabel,
+    this.showSecondary = true,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+
+    // Calculate scaling factors
+    final primaryMax = primaryData.reduce((a, b) => a > b ? a : b);
+    final primaryMin = primaryData.reduce((a, b) => a < b ? a : b);
+    final primaryRange = primaryMax - primaryMin;
+    final heightScale = size.height * 0.8 / primaryRange;
+
+    // Draw primary data line
+    paint.color = primaryColor;
+    _drawDataLine(canvas, size, primaryData, primaryMin, heightScale, paint);
+
+    // Draw secondary data line if applicable
+    if (showSecondary && secondaryData != null) {
+      final secondaryMax = secondaryData!.reduce((a, b) => a > b ? a : b);
+      final secondaryMin = secondaryData!.reduce((a, b) => a < b ? a : b);
+      final secondaryRange = secondaryMax - secondaryMin;
+      final secondaryHeightScale = size.height * 0.8 / secondaryRange;
+
+      paint.color = secondaryColor!;
+      _drawDataLine(
+        canvas,
+        size,
+        secondaryData!,
+        secondaryMin,
+        secondaryHeightScale,
+        paint,
+      );
+    }
+
+    // Draw axes and labels
+    _drawAxes(canvas, size);
+  }
+
+  void _drawDataLine(
+    Canvas canvas,
+    Size size,
+    List<double> data,
+    double minVal,
+    double scale,
+    Paint paint,
+  ) {
+    final path = Path();
+    final xStep = size.width / (data.length - 1);
+
+    for (int i = 0; i < data.length; i++) {
+      final x = i * xStep;
+      final y = size.height - ((data[i] - minVal) * scale) - size.height * 0.1;
+
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+
+      // Draw data points
+      canvas.drawCircle(Offset(x, y), 3, paint..style = PaintingStyle.fill);
+    }
+
+    canvas.drawPath(path, paint);
+  }
+
+  void _drawAxes(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.grey
+      ..strokeWidth = 1;
+
+    // X-axis
+    canvas.drawLine(
+      Offset(0, size.height - 20),
+      Offset(size.width, size.height - 20),
+      paint,
+    );
+
+    // Y-axis
+    canvas.drawLine(Offset(30, 0), Offset(30, size.height - 20), paint);
+
+    // Labels
+    final textStyle = TextStyle(color: Colors.grey[600], fontSize: 10);
+    final textSpan = TextSpan(text: '', style: textStyle);
+    final textPainter = TextPainter(
+      text: textSpan,
+      textDirection: TextDirection.ltr,
+    );
+
+    // X-axis labels
+    final xStep = size.width / (labels.length - 1);
+    for (int i = 0; i < labels.length; i++) {
+      if (i % 2 == 0) {
+        // Show every other label for clarity
+        textPainter.text = TextSpan(text: labels[i], style: textStyle);
+        textPainter.layout();
+        textPainter.paint(
+          canvas,
+          Offset(i * xStep - textPainter.width / 2, size.height - 18),
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
