@@ -34,6 +34,10 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key.pem
           chmod 600 private_key.pem
 
+      - name: 🔐 Add DigitalOcean droplet to known_hosts
+        run: |
+          ssh-keyscan -H 137.184.245.45 >> ~/.ssh/known_hosts
+
       - name: 🚀 Upload build artifacts to DigitalOcean
         run: |
           # Upload Android APK
