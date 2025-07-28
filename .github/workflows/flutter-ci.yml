@@ -45,10 +45,10 @@ jobs:
             build/app/outputs/flutter-apk/app-release.apk \
             root@147.182.230.31:/var/www/flutter_builds/app-release.apk
 
-          # Upload iOS app directory (Runner.app)
-          scp -i private_key.pem -r \
-            build/ios/iphoneos/Runner.app \
-            root@147.182.230.31:/var/www/flutter_builds/Runner.app
+          # Upload zipped iOS app
+          scp -i private_key.pem \
+            build/ios/iphoneos/Runner.app.zip \
+            root@147.182.230.31:/var/www/flutter_builds/Runner.app.zip
 
           # Optional: Run post-deploy script
           ssh -i private_key.pem root@147.182.230.31 "bash /var/www/deploy_flutter_builds.sh || echo 'No deploy script found'"
