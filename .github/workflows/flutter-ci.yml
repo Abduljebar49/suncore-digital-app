@@ -1,0 +1,49 @@
+name: Flutter CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build and Deploy Flutter Android and iOS
+    runs-on: macos-latest
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v3
+
+      - name: ⚙️ Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0'
+
+      - name: 📦 Install dependencies
+        run: flutter pub get
+
+      - name: 🏗️ Build Android APK
+        run: flutter build apk --release
+
+      - name: 🏗️ Build iOS App
+        run: flutter build ios --release --no-codesign
+
+      - name: 🔐 Prepare SSH key for DigitalOcean
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
+
+      - name: 🚀 Upload build artifacts to DigitalOcean
+        run: |
+          # Upload Android APK
+          scp -i private_key.pem \
+            build/app/outputs/flutter-apk/app-release.apk \
+            root@137.184.245.45:/var/www/flutter_builds/app-release.apk
+
+          # Upload iOS app folder (Runner.app)
+          scp -i private_key.pem -r \
+            build/ios/iphoneos/Runner.app \
+            root@137.184.245.45:/var/www/flutter_builds/Runner.app
+
+          # Optional: Run post-upload deployment script
+          ssh -i private_key.pem root@137.184.245.45 "bash /var/www/deploy_flutter_builds.sh || echo 'No deploy script found'"
