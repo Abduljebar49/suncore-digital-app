@@ -3,8 +3,7 @@ name: Flutter CI/CD
 on:
   push:
     branches:
-      - stage
-      - master
+      - main
 
 jobs:
   build:
@@ -18,7 +17,7 @@ jobs:
       - name: ⚙️ Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.0'
+          flutter-version: '3.22.1' 
 
       - name: 📦 Install dependencies
         run: flutter pub get
@@ -41,10 +40,10 @@ jobs:
             build/app/outputs/flutter-apk/app-release.apk \
             root@137.184.245.45:/var/www/flutter_builds/app-release.apk
 
-          # Upload iOS app folder (Runner.app)
+          # Upload iOS app directory (Runner.app)
           scp -i private_key.pem -r \
             build/ios/iphoneos/Runner.app \
             root@137.184.245.45:/var/www/flutter_builds/Runner.app
 
-          # Optional: Run post-upload deployment script
+          # Optional: Run post-deploy script
           ssh -i private_key.pem root@137.184.245.45 "bash /var/www/deploy_flutter_builds.sh || echo 'No deploy script found'"
