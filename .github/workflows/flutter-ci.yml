@@ -36,19 +36,19 @@ jobs:
 
       - name: 🔐 Add DigitalOcean droplet to known_hosts
         run: |
-          ssh-keyscan -H 137.184.245.45 >> ~/.ssh/known_hosts
+          ssh-keyscan -H 147.182.230.31 >> ~/.ssh/known_hosts
 
       - name: 🚀 Upload build artifacts to DigitalOcean
         run: |
           # Upload Android APK
           scp -i private_key.pem \
             build/app/outputs/flutter-apk/app-release.apk \
-            root@137.184.245.45:/var/www/flutter_builds/app-release.apk
+            root@147.182.230.31:/var/www/flutter_builds/app-release.apk
 
           # Upload iOS app directory (Runner.app)
           scp -i private_key.pem -r \
             build/ios/iphoneos/Runner.app \
-            root@137.184.245.45:/var/www/flutter_builds/Runner.app
+            root@147.182.230.31:/var/www/flutter_builds/Runner.app
 
           # Optional: Run post-deploy script
-          ssh -i private_key.pem root@137.184.245.45 "bash /var/www/deploy_flutter_builds.sh || echo 'No deploy script found'"
+          ssh -i private_key.pem root@147.182.230.31 "bash /var/www/deploy_flutter_builds.sh || echo 'No deploy script found'"
