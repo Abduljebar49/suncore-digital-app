@@ -3,7 +3,8 @@ name: Flutter CI/CD
 on:
   push:
     branches:
-      - main
+      - stage
+      - master
 
 jobs:
   build:
