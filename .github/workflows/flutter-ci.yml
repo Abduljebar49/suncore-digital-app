@@ -40,6 +40,11 @@ jobs:
 
       - name: 🚀 Upload build artifacts to DigitalOcean
         run: |
+          # Zip Runner.app
+          cd build/ios/iphoneos
+          zip -r Runner.app.zip Runner.app
+          cd -
+
           # Upload Android APK
           scp -i private_key.pem \
             build/app/outputs/flutter-apk/app-release.apk \
@@ -49,6 +54,5 @@ jobs:
           scp -i private_key.pem \
             build/ios/iphoneos/Runner.app.zip \
             root@147.182.230.31:/var/www/flutter_builds/Runner.app.zip
-
           # Optional: Run post-deploy script
           ssh -i private_key.pem root@147.182.230.31 "bash /var/www/deploy_flutter_builds.sh || echo 'No deploy script found'"
