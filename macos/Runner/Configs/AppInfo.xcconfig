@@ -8,7 +8,7 @@
 PRODUCT_NAME = suncore_mobile
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.suncoreMobile
+PRODUCT_BUNDLE_IDENTIFIER = com.suncoredigital.mobileapp
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2025 com.example. All rights reserved.

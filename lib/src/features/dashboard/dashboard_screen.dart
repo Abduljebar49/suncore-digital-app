@@ -22,7 +22,6 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final width = MediaQuery.of(context).size.width;
-    final isDarkMode = theme.brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
@@ -319,34 +318,7 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActivityItem(
-    BuildContext context,
-    String title,
-    String date,
-    String amount,
-  ) {
-    final theme = Theme.of(context);
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Icon(Icons.currency_bitcoin, color: theme.colorScheme.primary),
-      title: Text(title, style: TextStyle(color: theme.colorScheme.onSurface)),
-      subtitle: Text(
-        date,
-        style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.7)),
-      ),
-      trailing: Text(
-        amount,
-        style: TextStyle(
-          color: amount.startsWith('+')
-              ? AppTheme.successColor
-              : amount.startsWith('-')
-              ? AppTheme.errorColor
-              : theme.colorScheme.onSurface,
-        ),
-      ),
-    );
-  }
-
+  
   Widget _buildSectionHeader(BuildContext context, String title) {
     final theme = Theme.of(context);
     return Text(
@@ -358,99 +330,6 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPerformanceMetricsCard(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            _buildMetricRow(
-              context,
-              'Today',
-              '0.00042 BTC',
-              '\$16.80 USD',
-              Icons.today,
-              AppTheme.accentColor,
-            ),
-            Divider(height: 24, color: theme.dividerColor),
-            _buildMetricRow(
-              context,
-              'This Month',
-              '0.0126 BTC',
-              '\$504.00 USD',
-              Icons.calendar_month,
-              AppTheme.successColor,
-            ),
-            Divider(height: 24, color: theme.dividerColor),
-            _buildMetricRow(
-              context,
-              'Year to Date',
-              '0.042 BTC',
-              '\$1,680.00 USD',
-              Icons.insights,
-              theme.colorScheme.primary,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMetricRow(
-    BuildContext context,
-    String period,
-    String btcValue,
-    String usdValue,
-    IconData icon,
-    Color color,
-  ) {
-    final theme = Theme.of(context);
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.2),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: color),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                period,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                btcValue,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: theme.colorScheme.onSurface,
-                ),
-              ),
-              Text(
-                usdValue,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: theme.colorScheme.onSurface.withOpacity(0.7),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _buildQuickAction(
     BuildContext context,
