@@ -37,7 +37,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       final credentials = await _auth0
           .webAuthentication(scheme: dotenv.env['AUTH0_CUSTOM_SCHEME'])
-          .login(useHTTPS: true);
+          .login(
+            useHTTPS: true,
+            audience: dotenv
+                .env['AUTH0_AUDIENCE'], // 👈 Important: Set audience for accessToken
+            scopes: {'openid', 'profile', 'email', 'offline_access'},
+          );
 
       // Store the access token
       if (credentials.accessToken.isNotEmpty) {

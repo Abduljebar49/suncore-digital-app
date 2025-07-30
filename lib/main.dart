@@ -9,7 +9,6 @@ import 'package:suncore_mobile/src/features/auth/bloc/auth_bloc.dart';
 import 'package:suncore_mobile/src/features/onboarding/onboarding_scree.dart';
 import 'package:suncore_mobile/src/features/splash/splash_screen.dart';
 
-
 void main() async {
   try {
     WidgetsFlutterBinding.ensureInitialized();
