@@ -29,7 +29,7 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         manifestPlaceholders["auth0Domain"] = "dev-3av5jmuks2abs1jk.us.auth0.com"
-        manifestPlaceholders["auth0Scheme"] = "https"
+        manifestPlaceholders["auth0Scheme"] = "com.suncoredigital.mobileapp"
     }
 
     buildTypes {

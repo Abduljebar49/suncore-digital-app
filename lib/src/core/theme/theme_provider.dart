@@ -8,7 +8,7 @@ class ThemeProvider with ChangeNotifier {
   ThemeProvider([this._prefs]) {
     // Load saved theme preference if prefs is available
     if (_prefs != null) {
-      _themeMode = _prefs!.getBool('isDark') ?? false 
+      _themeMode = _prefs.getBool('isDark') ?? false 
           ? ThemeMode.dark 
           : ThemeMode.light;
     }

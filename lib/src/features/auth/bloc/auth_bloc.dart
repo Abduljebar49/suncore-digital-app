@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
@@ -13,16 +14,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   late final Auth0Web _auth0Web;
 
   AuthBloc() : super(AuthInitial()) {
-    // Initialize Auth0 instances
     _auth0 = Auth0(dotenv.env['AUTH0_DOMAIN']!, dotenv.env['AUTH0_CLIENT_ID']!);
     _auth0Web = Auth0Web(dotenv.env['AUTH0_DOMAIN']!, dotenv.env['AUTH0_CLIENT_ID']!);
 
-    // Register event handlers first
     on<LoginRequested>(_onLoginRequested);
     on<LogoutRequested>(_onLogoutRequested);
     on<CheckAuthStatus>(_onCheckAuthStatus);
 
-    // Then add the initial event
     add(CheckAuthStatus());
   }
 
@@ -40,6 +38,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final credentials = await _auth0
           .webAuthentication(scheme: dotenv.env['AUTH0_CUSTOM_SCHEME'])
           .login(useHTTPS: true);
+
+      // Store the access token
+      if (credentials.accessToken.isNotEmpty) {
+        await _storeToken(credentials.accessToken);
+        debugPrint('Login successful - Token: ${credentials.accessToken}');
+      }
 
       emit(AuthAuthenticated(user: credentials.user));
     } catch (e) {
@@ -60,6 +64,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             .webAuthentication(scheme: dotenv.env['AUTH0_CUSTOM_SCHEME'])
             .logout(useHTTPS: true);
       }
+      // Clear stored token
+      await _clearToken();
       emit(AuthUnauthenticated());
     } catch (e) {
       emit(AuthFailed(message: 'Logout failed: ${e.toString()}'));
@@ -75,12 +81,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (kIsWeb) {
         final credentials = await _auth0Web.onLoad();
         if (credentials != null) {
+          await _storeToken(credentials.accessToken);
+          debugPrint('Web auth token: ${credentials.accessToken}');
           emit(AuthAuthenticated(user: credentials.user));
           return;
         }
       } else {
         final credentials = await _auth0.credentialsManager.credentials();
         if (credentials != null) {
+          await _storeToken(credentials.accessToken);
+          debugPrint('Mobile auth token: ${credentials.accessToken}');
           emit(AuthAuthenticated(user: credentials.user));
           return;
         }
@@ -89,5 +99,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } catch (e) {
       emit(AuthUnauthenticated());
     }
+  }
+
+  Future<void> _storeToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('auth_token', token);
+  }
+
+  Future<void> _clearToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('auth_token');
+  }
+
+  Future<String?> getStoredToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('auth_token');
   }
 }
