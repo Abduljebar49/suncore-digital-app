@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:suncore_mobile/src/core/models/kyc_status.dart';
+import 'package:suncore_mobile/src/core/repositories/dashboard_repository.dart';
 import 'package:suncore_mobile/src/core/theme/app_theme.dart';
 import 'package:suncore_mobile/src/features/asic/asic_management_screen.dart';
+import 'package:suncore_mobile/src/features/dashboard/bloc/kyc/kyc_bloc.dart';
+import 'package:suncore_mobile/src/features/dashboard/bloc/kyc/kyc_event.dart';
+import 'package:suncore_mobile/src/features/dashboard/bloc/kyc/kyc_state.dart';
 import 'package:suncore_mobile/src/features/performance/performance_screen.dart';
 import 'package:suncore_mobile/src/features/settings/settings_screen.dart';
 import 'package:suncore_mobile/src/features/statements/statements_screen.dart';
@@ -23,205 +29,214 @@ class DashboardScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final width = MediaQuery.of(context).size.width;
 
-    return Scaffold(
-      backgroundColor: theme.colorScheme.background,
-      appBar: AppBar(
-        backgroundColor: theme.colorScheme.surface,
-        title: Text(
-          'Client Dashboard',
-          style: TextStyle(color: theme.colorScheme.onSurface),
+    return BlocProvider(
+      create: (context) =>
+          KycBloc(dashboardRepository: DashboardRepository())
+            ..add(LoadKycStatus()),
+      child: Scaffold(
+        backgroundColor: theme.colorScheme.background,
+        appBar: AppBar(
+          backgroundColor: theme.colorScheme.surface,
+          title: Text(
+            'Client Dashboard',
+            style: TextStyle(color: theme.colorScheme.onSurface),
+          ),
+          iconTheme: IconThemeData(color: theme.colorScheme.onSurface),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.settings, color: theme.colorScheme.onSurface),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              ),
+            ),
+            IconButton(
+              icon: Icon(Icons.logout, color: theme.colorScheme.onSurface),
+              onPressed: onLogout,
+              tooltip: 'Logout',
+            ),
+          ],
         ),
-        iconTheme: IconThemeData(color: theme.colorScheme.onSurface),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.settings, color: theme.colorScheme.onSurface),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const SettingsScreen()),
-            ),
-          ),
-          IconButton(
-            icon: Icon(Icons.logout, color: theme.colorScheme.onSurface),
-            onPressed: onLogout,
-            tooltip: 'Logout',
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Welcome, $userName!',
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: theme.colorScheme.onBackground,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Earnings Card
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Estimated Earnings',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onSurface,
+        body: BlocBuilder<KycBloc, KycState>(
+          builder: (context, state) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Welcome, $userName!',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: theme.colorScheme.onBackground,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (state is KycLoaded) _buildKycStatusCard(state.status),
+                  // Earnings Card
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Estimated Earnings',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          _buildEarningRow(
+                            context,
+                            '24 Hours',
+                            '0.00042 BTC',
+                            '\$16.80',
+                          ),
+                          _buildEarningRow(
+                            context,
+                            '7 Days',
+                            '0.00294 BTC',
+                            '\$117.60',
+                          ),
+                          _buildEarningRow(
+                            context,
+                            '30 Days',
+                            '0.0126 BTC',
+                            '\$504.00',
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    _buildEarningRow(
-                      context,
-                      '24 Hours',
-                      '0.00042 BTC',
-                      '\$16.80',
-                    ),
-                    _buildEarningRow(
-                      context,
-                      '7 Days',
-                      '0.00294 BTC',
-                      '\$117.60',
-                    ),
-                    _buildEarningRow(
-                      context,
-                      '30 Days',
-                      '0.0126 BTC',
-                      '\$504.00',
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Hardware Performance
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Your Hardware Performance',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.onBackground,
                   ),
-                ),
-                const SizedBox(height: 12),
-                _buildPerformanceIndicator(
-                  context,
-                  'Uptime',
-                  '99.2%',
-                  AppTheme.successColor,
-                ),
-                _buildPerformanceIndicator(
-                  context,
-                  'Efficiency',
-                  '38 J/TH',
-                  AppTheme.accentColor,
-                ),
-                _buildPerformanceIndicator(
-                  context,
-                  'Hashrate',
-                  '140 TH/s',
-                  AppTheme.secondaryColor,
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-            // Recent Activity
-            // Column(
-            //   crossAxisAlignment: CrossAxisAlignment.start,
-            //   children: [
-            //     Text(
-            //       'Recent Activity',
-            //       style: theme.textTheme.titleMedium?.copyWith(
-            //         fontWeight: FontWeight.bold,
-            //         color: theme.colorScheme.onBackground,
-            //       ),
-            //     ),
-            //     const SizedBox(height: 12),
-            //     _buildActivityItem(context, 'Daily Payout', 'Today, 08:00', '+0.00042 BTC'),
-            //     _buildActivityItem(context, 'Management Fee', 'Oct 1, 2023', '-0.005 BTC'),
-            //     _buildActivityItem(context, 'Monthly Payout', 'Sep 1, 2023', '+0.042 BTC'),
-            //   ],
-            // ),
-            // _buildSectionHeader(context, 'Key Performance Metrics'),
-            // const SizedBox(height: 8),
-            // _buildPerformanceMetricsCard(context),
-            // const SizedBox(height: 24),
+                  // Hardware Performance
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Your Hardware Performance',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onBackground,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildPerformanceIndicator(
+                        context,
+                        'Uptime',
+                        '99.2%',
+                        AppTheme.successColor,
+                      ),
+                      _buildPerformanceIndicator(
+                        context,
+                        'Efficiency',
+                        '38 J/TH',
+                        AppTheme.accentColor,
+                      ),
+                      _buildPerformanceIndicator(
+                        context,
+                        'Hashrate',
+                        '140 TH/s',
+                        AppTheme.secondaryColor,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
 
-            // Quick Access Section
-            _buildSectionHeader(context, 'Quick Access'),
-            const SizedBox(height: 8),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 3,
-              childAspectRatio: 1.2,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              children: [
-                _buildQuickAction(
-                  context,
-                  Icons.account_balance_wallet,
-                  'Wallet',
-                  WalletScreen(),
-                ),
-                _buildQuickAction(
-                  context,
-                  Icons.bar_chart,
-                  'Performance',
-                  PerformanceScreen(),
-                ),
-                _buildQuickAction(
-                  context,
-                  Icons.hardware,
-                  'My ASICs',
-                  AsicManagementScreen(),
-                ),
-                _buildQuickAction(
-                  context,
-                  Icons.upgrade,
-                  'Upgrades',
-                  UpgradesScreen(),
-                ),
-                _buildQuickAction(
-                  context,
-                  Icons.description,
-                  'Statements',
-                  StatementsScreen(),
-                ),
-                _buildQuickAction(
-                  context,
-                  Icons.support,
-                  'Support',
-                  SupportScreen(),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
+                  // Recent Activity
+                  // Column(
+                  //   crossAxisAlignment: CrossAxisAlignment.start,
+                  //   children: [
+                  //     Text(
+                  //       'Recent Activity',
+                  //       style: theme.textTheme.titleMedium?.copyWith(
+                  //         fontWeight: FontWeight.bold,
+                  //         color: theme.colorScheme.onBackground,
+                  //       ),
+                  //     ),
+                  //     const SizedBox(height: 12),
+                  //     _buildActivityItem(context, 'Daily Payout', 'Today, 08:00', '+0.00042 BTC'),
+                  //     _buildActivityItem(context, 'Management Fee', 'Oct 1, 2023', '-0.005 BTC'),
+                  //     _buildActivityItem(context, 'Monthly Payout', 'Sep 1, 2023', '+0.042 BTC'),
+                  //   ],
+                  // ),
+                  // _buildSectionHeader(context, 'Key Performance Metrics'),
+                  // const SizedBox(height: 8),
+                  // _buildPerformanceMetricsCard(context),
+                  // const SizedBox(height: 24),
 
-            // Live Data Section
-            _buildSectionHeader(context, 'Live Data'),
-            const SizedBox(height: 8),
-            _buildLiveDataSection(context, width),
-            const SizedBox(height: 24),
+                  // Quick Access Section
+                  _buildSectionHeader(context, 'Quick Access'),
+                  const SizedBox(height: 8),
+                  GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 3,
+                    childAspectRatio: 1.2,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    children: [
+                      _buildQuickAction(
+                        context,
+                        Icons.account_balance_wallet,
+                        'Wallet',
+                        WalletScreen(),
+                      ),
+                      _buildQuickAction(
+                        context,
+                        Icons.bar_chart,
+                        'Performance',
+                        PerformanceScreen(),
+                      ),
+                      _buildQuickAction(
+                        context,
+                        Icons.hardware,
+                        'My ASICs',
+                        AsicManagementScreen(),
+                      ),
+                      _buildQuickAction(
+                        context,
+                        Icons.upgrade,
+                        'Upgrades',
+                        UpgradesScreen(),
+                      ),
+                      _buildQuickAction(
+                        context,
+                        Icons.description,
+                        'Statements',
+                        StatementsScreen(),
+                      ),
+                      _buildQuickAction(
+                        context,
+                        Icons.support,
+                        'Support',
+                        SupportScreen(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
 
-            // Learning Hub Section
-            _buildSectionHeader(context, 'Learning Hub'),
-            const SizedBox(height: 8),
-            _buildLearningHubSection(context),
-          ],
+                  // Live Data Section
+                  _buildSectionHeader(context, 'Live Data'),
+                  const SizedBox(height: 8),
+                  _buildLiveDataSection(context, width),
+                  const SizedBox(height: 24),
+
+                  // Learning Hub Section
+                  _buildSectionHeader(context, 'Learning Hub'),
+                  const SizedBox(height: 8),
+                  _buildLearningHubSection(context),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
@@ -272,6 +287,55 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildKycStatusCard(KycStatus status) {
+    Color statusColor;
+    debugPrint('statusColor ${status.toString()}');
+    switch (status.status) {
+      case 'APPROVED':
+        statusColor = Colors.green;
+        break;
+      case 'PENDING':
+        statusColor = Colors.orange;
+        break;
+      case 'REJECTED':
+        statusColor = Colors.red;
+        break;
+      default:
+        statusColor = Colors.grey;
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'KYC Verification',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Text('Status: ', style: TextStyle(fontSize: 16)),
+                Text(
+                  status.status,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: statusColor,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text('Email: ${status.email}', style: TextStyle(fontSize: 16)),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildPerformanceIndicator(
     BuildContext context,
     String label,
@@ -318,7 +382,6 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  
   Widget _buildSectionHeader(BuildContext context, String title) {
     final theme = Theme.of(context);
     return Text(
@@ -329,7 +392,6 @@ class DashboardScreen extends StatelessWidget {
       ),
     );
   }
-
 
   Widget _buildQuickAction(
     BuildContext context,

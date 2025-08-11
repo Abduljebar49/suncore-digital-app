@@ -143,29 +143,6 @@ class LoginScreen extends StatelessWidget {
                             },
                           ),
                           const SizedBox(height: 16),
-                          // Row(
-                          //   mainAxisAlignment: MainAxisAlignment.center,
-                          //   children: [
-                          //     Text(
-                          //       "Don't have an account?",
-                          //       style: TextStyle(color: Colors.grey.shade600),
-                          //     ),
-                          //     TextButton(
-                          //       onPressed: () {
-                          //         context.read<AuthBloc>().add(
-                          //           LoginRequested(),
-                          //         );
-                          //       },
-                          //       child: Text(
-                          //         'Sign up',
-                          //         style: TextStyle(
-                          //           color: AppTheme.primaryColor,
-                          //           fontWeight: FontWeight.bold,
-                          //         ),
-                          //       ),
-                          //     ),
-                          //   ],
-                          // ),
                         ],
                       ),
                     ),

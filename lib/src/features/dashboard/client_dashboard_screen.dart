@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:suncore_mobile/src/core/models/kyc_status.dart';
+import 'package:suncore_mobile/src/core/repositories/dashboard_repository.dart';
+import 'package:suncore_mobile/src/features/dashboard/bloc/kyc/kyc_bloc.dart';
+import 'package:suncore_mobile/src/features/dashboard/bloc/kyc/kyc_event.dart';
+import 'package:suncore_mobile/src/features/dashboard/bloc/kyc/kyc_state.dart';
 
 class ClientDashboardScreen extends StatelessWidget {
   final String userName;
@@ -9,7 +15,7 @@ class ClientDashboardScreen extends StatelessWidget {
     required this.userName,
     required this.onLogout,
   });
-  // Helper method to build earning rows
+
   Widget _buildEarningRow(
     String timeframe,
     String btcAmount,
@@ -43,7 +49,6 @@ class ClientDashboardScreen extends StatelessWidget {
     );
   }
 
-  // Helper method to build performance indicators
   Widget _buildPerformanceIndicator(String label, String value, Color color) {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -73,7 +78,6 @@ class ClientDashboardScreen extends StatelessWidget {
     );
   }
 
-  // Helper method to build activity items
   Widget _buildActivityItem(String title, String date, String amount) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
@@ -86,89 +90,160 @@ class ClientDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('$userName\'s Mining Overview'),
-        automaticallyImplyLeading: false,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Earnings Summary (Read-only)
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Estimated Earnings',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+    return BlocProvider(
+      create: (context) =>
+          KycBloc(dashboardRepository: DashboardRepository())
+            ..add(LoadKycStatus()),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('$userName\'s Mining Overview'),
+          automaticallyImplyLeading: false,
+        ),
+        body: BlocBuilder<KycBloc, KycState>(
+          builder: (context, state) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  if (state is KycLoaded) _buildKycStatusCard(state.status),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Estimated Earnings',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          _buildEarningRow(
+                            '24 Hours',
+                            '0.00042 BTC',
+                            '\$16.80',
+                          ),
+                          _buildEarningRow('7 Days', '0.00294 BTC', '\$117.60'),
+                          _buildEarningRow('30 Days', '0.0126 BTC', '\$504.00'),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    _buildEarningRow('24 Hours', '0.00042 BTC', '\$16.80'),
-                    _buildEarningRow('7 Days', '0.00294 BTC', '\$117.60'),
-                    _buildEarningRow('30 Days', '0.0126 BTC', '\$504.00'),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Hardware Performance
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Your Hardware Performance',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildPerformanceIndicator(
+                        'Uptime',
+                        '99.2%',
+                        Colors.green,
+                      ),
+                      _buildPerformanceIndicator(
+                        'Efficiency',
+                        '38 J/TH',
+                        Colors.blue,
+                      ),
+                      _buildPerformanceIndicator(
+                        'Hashrate',
+                        '140 TH/s',
+                        Colors.purple,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Recent Activity
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Recent Activity',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildActivityItem(
+                        'Daily Payout',
+                        'Today, 08:00',
+                        '+0.00042 BTC',
+                      ),
+                      _buildActivityItem(
+                        'Management Fee',
+                        'Oct 1, 2023',
+                        '-0.005 BTC',
+                      ),
+                      _buildActivityItem(
+                        'Monthly Payout',
+                        'Sep 1, 2023',
+                        '+0.042 BTC',
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 20),
+            );
+          },
+        ),
+      ),
+    );
+  }
 
-            // Hardware Performance
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildKycStatusCard(KycStatus status) {
+    Color statusColor;
+    switch (status.status) {
+      case 'APPROVED':
+        statusColor = Colors.green;
+        break;
+      case 'PENDING':
+        statusColor = Colors.orange;
+        break;
+      case 'REJECTED':
+        statusColor = Colors.red;
+        break;
+      default:
+        statusColor = Colors.grey;
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'KYC Verification',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Row(
               children: [
-                const Text(
-                  'Your Hardware Performance',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-                _buildPerformanceIndicator('Uptime', '99.2%', Colors.green),
-                _buildPerformanceIndicator(
-                  'Efficiency',
-                  '38 J/TH',
-                  Colors.blue,
-                ),
-                _buildPerformanceIndicator(
-                  'Hashrate',
-                  '140 TH/s',
-                  Colors.purple,
+                Text('Status: ', style: TextStyle(fontSize: 16)),
+                Text(
+                  status.status,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: statusColor,
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-
-            // Recent Activity
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Recent Activity',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-                _buildActivityItem(
-                  'Daily Payout',
-                  'Today, 08:00',
-                  '+0.00042 BTC',
-                ),
-                _buildActivityItem(
-                  'Management Fee',
-                  'Oct 1, 2023',
-                  '-0.005 BTC',
-                ),
-                _buildActivityItem(
-                  'Monthly Payout',
-                  'Sep 1, 2023',
-                  '+0.042 BTC',
-                ),
-              ],
-            ),
+            const SizedBox(height: 8),
+            Text('Email: ${status.email}', style: TextStyle(fontSize: 16)),
           ],
         ),
       ),

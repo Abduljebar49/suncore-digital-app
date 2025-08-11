@@ -1,6 +1,5 @@
 import 'package:auth0_flutter/auth0_flutter_web.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
