@@ -24,7 +24,6 @@ class AuthController {
 
   static Future<Credentials?> login() async {
     try {
-
       if (kIsWeb) {
         // For web: Use redirect login
         await auth0Web.loginWithRedirect(
@@ -40,14 +39,15 @@ class AuthController {
           .webAuthentication(scheme: dotenv.env['AUTH0_CUSTOM_SCHEME'])
           .login(
             useHTTPS: true,
-            audience: dotenv.env['AUTH0_AUDIENCE'], // 👈 Important: Set audience for accessToken
+            audience: dotenv.env['AUTH0_AUDIENCE'],
             scopes: {'openid', 'profile', 'email', 'offline_access'},
           );
 
+      debugPrint('credentials ${credentials.toString()}');
       // Validate access token
       if (credentials.accessToken != null &&
           credentials.accessToken.isNotEmpty) {
-            debugPrint('audience ${dotenv.env['AUTH0_AUDIENCE']}');
+        debugPrint('audience ${dotenv.env['AUTH0_AUDIENCE']}');
         debugPrint('Successfully received token: ${credentials.accessToken}');
         // await _storeToken(credentials.accessToken); // Optional: save token securely
       } else {

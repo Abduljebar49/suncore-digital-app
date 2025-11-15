@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:auth0_flutter/auth0_flutter_web.dart';
 import 'package:equatable/equatable.dart';
@@ -15,7 +17,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   AuthBloc() : super(AuthInitial()) {
     _auth0 = Auth0(dotenv.env['AUTH0_DOMAIN']!, dotenv.env['AUTH0_CLIENT_ID']!);
-    _auth0Web = Auth0Web(dotenv.env['AUTH0_DOMAIN']!, dotenv.env['AUTH0_CLIENT_ID']!);
+    _auth0Web = Auth0Web(
+      dotenv.env['AUTH0_DOMAIN']!,
+      dotenv.env['AUTH0_CLIENT_ID']!,
+    );
 
     on<LoginRequested>(_onLoginRequested);
     on<LogoutRequested>(_onLogoutRequested);
@@ -43,8 +48,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
                 .env['AUTH0_AUDIENCE'], // 👈 Important: Set audience for accessToken
             scopes: {'openid', 'profile', 'email', 'offline_access'},
           );
+final credsMap = {
+  'accessToken': credentials.accessToken,
+  'idToken': credentials.idToken,
+  'refreshToken': credentials.refreshToken,
+  'tokenType': credentials.tokenType,
+  'expiresAt': credentials.expiresAt.toIso8601String(),
+  'user': credentials.user.toMap(), // UserProfile has toMap()
+};
 
-      // Store the access token
+// Pretty-print JSON
+debugPrint(const JsonEncoder.withIndent('  ').convert(credsMap)); 
       if (credentials.accessToken.isNotEmpty) {
         await _storeToken(credentials.accessToken);
         debugPrint('Login successful - Token: ${credentials.accessToken}');
